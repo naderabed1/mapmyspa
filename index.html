@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MapMySpa — Find Medical Spas Near You</title>
+  <meta name="description" content="Search and find medical spas anywhere in the United States. Get names, addresses, phone numbers, hours, and reviews." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green-dark:   #0a4a36;
+      --green-mid:    #0f6e56;
+      --green-light:  #1a9e7a;
+      --green-pale:   #d4f0e7;
+      --green-soft:   #edf8f4;
+      --cream:        #faf8f4;
+      --warm-white:   #ffffff;
+      --ink:          #1a1a18;
+      --ink-mid:      #4a4a46;
+      --ink-light:    #8a8a84;
+      --border:       rgba(15,110,86,0.15);
+      --shadow:       0 4px 24px rgba(10,74,54,0.08);
+      --shadow-lg:    0 12px 48px rgba(10,74,54,0.14);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(250,248,244,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--green-dark);
+      letter-spacing: 0.02em;
+      text-decoration: none;
+    }
+
+    .nav-logo span { color: var(--green-light); font-style: italic; }
+
+    .nav-tagline {
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--ink-light);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(160deg, var(--green-dark) 0%, #0d5c45 50%, var(--green-mid) 100%);
+      padding: 5rem 2rem 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .hero-inner { position: relative; max-width: 680px; margin: 0 auto; }
+
+    .hero-eyebrow {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--green-pale);
+      margin-bottom: 1.2rem;
+      padding: 4px 14px;
+      border: 1px solid rgba(212,240,231,0.3);
+      border-radius: 20px;
+    }
+
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.4rem, 6vw, 3.8rem);
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 em { font-style: italic; color: var(--green-pale); }
+
+    .hero-sub {
+      font-size: 1rem;
+      font-weight: 300;
+      color: rgba(255,255,255,0.72);
+      margin-bottom: 2.5rem;
+      line-height: 1.6;
+    }
+
+    /* ── SEARCH BOX ── */
+    .search-wrap {
+      background: var(--warm-white);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .search-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      height: 48px;
+      padding: 0 16px;
+      border: 1.5px solid #e0ddd8;
+      border-radius: 10px;
+      font-family: 'Jost', sans-serif;
+      font-size: 15px;
+      color: var(--ink);
+      background: var(--cream);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--green-mid);
+      box-shadow: 0 0 0 3px rgba(15,110,86,0.1);
+      background: #fff;
+    }
+
+    .search-input::placeholder { color: var(--ink-light); }
+
+    .search-btn {
+      height: 48px;
+      padding: 0 28px;
+      background: var(--green-mid);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Jost', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-btn:hover { background: var(--green-dark); }
+    .search-btn:active { transform: scale(0.97); }
+    .search-btn:disabled { background: #9FE1CB; cursor: not-allowed; }
+
+    .search-btn svg { flex-shrink: 0; }
+
+    .search-hint {
+      margin-top: 0.75rem;
+      font-size: 12px;
+      color: var(--ink-light);
+      text-align: left;
+    }
+
+    .search-hint strong { color: var(--ink-mid); font-weight: 500; }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+
+    /* ── STATUS ── */
+    #statusBar {
+      text-align: center;
+      font-size: 14px;
+      color: var(--ink-mid);
+      margin-bottom: 1.5rem;
+      min-height: 22px;
+      font-weight: 300;
+    }
+
+    #statusBar strong { font-weight: 500; color: var(--green-dark); }
+
+    /* ── ERROR ── */
+    .error-box {
+      background: #fff5f5;
+      border: 1px solid #fcc;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      color: #8b2020;
+      font-size: 13.5px;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: var(--ink-light);
+    }
+
+    .empty-icon {
+      width: 64px;
+      height: 64px;
+      background: var(--green-soft);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.25rem;
+    }
+
+    .empty-state h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      color: var(--ink-mid);
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state p { font-size: 14px; font-weight: 300; }
+
+    /* ── LOADER ── */
+    .loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+      padding: 4rem 1rem;
+    }
+
+    .loader-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 10px; height: 10px;
+      background: var(--green-mid);
+      border-radius: 50%;
+      animation: bop 1.1s ease-in-out infinite;
+    }
+    .dot:nth-child(2) { animation-delay: 0.18s; }
+    .dot:nth-child(3) { animation-delay: 0.36s; }
+
+    @keyframes bop {
+      0%,80%,100% { transform: translateY(0); opacity: 0.35; }
+      40% { transform: translateY(-8px); opacity: 1; }
+    }
+
+    .loader-text {
+      font-size: 14px;
+      color: var(--ink-light);
+      font-weight: 300;
+      font-style: italic;
+    }
+
+    /* ── GRID ── */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 18px;
+    }
+
+    /* ── CARD ── */
+    .spa-card {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.4rem 1.5rem;
+      box-shadow: var(--shadow);
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .spa-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .spa-number {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--green-light);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .spa-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--green-dark);
+      line-height: 1.25;
+    }
+
+    .rating-badge {
+      background: var(--green-soft);
+      border: 1px solid var(--green-pale);
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .star-icon { color: var(--green-light); font-size: 11px; }
+
+    .card-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 12px 0;
+    }
+
+    .card-detail {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13.5px;
+      color: var(--ink-mid);
+      margin-bottom: 8px;
+      line-height: 1.45;
+    }
+
+    .detail-icon {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      margin-top: 1px;
+      color: var(--green-mid);
+      opacity: 0.7;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11.5px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+
+    .pill-open { background: #e8f7ef; color: #1a6e3e; border: 1px solid #b6e4cc; }
+    .pill-closed { background: #fef2f2; color: #9b2020; border: 1px solid #f8c0c0; }
+
+    details { margin-top: 4px; }
+    details summary {
+      font-size: 12.5px;
+      color: var(--green-mid);
+      cursor: pointer;
+      list-style: none;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 500;
+    }
+    details summary::-webkit-details-marker { display: none; }
+    details summary::after { content: ' ▾'; font-size: 10px; }
+    details[open] summary::after { content: ' ▴'; }
+
+    .hours-grid {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 3px 12px;
+      font-size: 12.5px;
+      color: var(--ink-mid);
+      padding: 10px 12px;
+      background: var(--green-soft);
+      border-radius: 8px;
+    }
+
+    .hours-day { font-weight: 500; color: var(--green-dark); }
+    .hours-time { color: var(--ink-mid); }
+
+    .reviews-section {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .reviews-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      margin-bottom: 8px;
+    }
+
+    .review-item {
+      font-size: 13px;
+      color: var(--ink-mid);
+      font-style: italic;
+      line-height: 1.6;
+      margin-bottom: 8px;
+      padding: 8px 12px;
+      background: var(--cream);
+      border-left: 3px solid var(--green-pale);
+      border-radius: 0 6px 6px 0;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--green-dark);
+      color: rgba(255,255,255,0.55);
+      text-align: center;
+      padding: 2rem;
+      font-size: 13px;
+      font-weight: 300;
+    }
+
+    footer strong { color: rgba(255,255,255,0.85); font-weight: 500; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      nav { padding: 0 1rem; }
+      .nav-tagline { display: none; }
+      .hero { padding: 3.5rem 1.25rem 3rem; }
+      main { padding: 2rem 1.25rem 4rem; }
+      .results-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-logo" href="#">Map<span>MySpa</span></a>
+    <span class="nav-tagline">United States Medical Spa Directory</span>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <span class="hero-eyebrow">Powered by live search</span>
+      <h1>Find <em>Medical Spas</em><br>Near You</h1>
+      <p class="hero-sub">Search any city or ZIP code to discover medical spas across the United States — with addresses, phone numbers, hours, and reviews.</p>
+      <div class="search-wrap">
+        <div class="search-row">
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Enter city or ZIP code (e.g. Miami, FL or 90210)"
+            autocomplete="off"
+          />
+          <button class="search-btn" id="searchBtn" onclick="doSearch()">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Search
+          </button>
+        </div>
+        <p class="search-hint">Try: <strong>Beverly Hills, CA</strong> · <strong>Scottsdale, AZ</strong> · <strong>New York, NY</strong> · <strong>10001</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN -->
+  <main>
+    <div id="statusBar"></div>
+    <div class="error-box" id="errorBox"></div>
+    <div id="resultsContainer">
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <path d="M14 3C8.477 3 4 7.477 4 13s4.477 10 10 10 10-4.477 10-10S19.523 3 14 3z" stroke="#0f6e56" stroke-width="1.5" fill="none"/>
+            <path d="M14 9v5l3 3" stroke="#0f6e56" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>Ready to search</h3>
+        <p>Enter any U.S. city or ZIP code above to find medical spas near you.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <strong>MapMySpa.com</strong> &nbsp;·&nbsp; Finding medical spas across the United States &nbsp;·&nbsp; Results powered by live web search
+  </footer>
+
+<script>
+  const WORKER_URL = 'https://mapmyspa.nader-h-abed.workers.dev';
+
+  document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doSearch();
+  });
+
+  async function doSearch() {
+    const query = document.getElementById('searchInput').value.trim();
+    if (!query) return;
+
+    const btn = document.getElementById('searchBtn');
+    const container = document.getElementById('resultsContainer');
+    const statusBar = document.getElementById('statusBar');
+    const errorBox = document.getElementById('errorBox');
+
+    btn.disabled = true;
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="white" stroke-width="1.5" fill="none" stroke-dasharray="28" stroke-dashoffset="10"><animateTransform attributeName="transform" type="rotate" from="0 8 8" to="360 8 8" dur="0.8s" repeatCount="indefinite"/></circle></svg> Searching...`;
+    statusBar.innerHTML = '';
+    errorBox.style.display = 'none';
+    errorBox.textContent = '';
+
+    container.innerHTML = `
+      <div class="loader">
+        <div class="loader-dots">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+        <p class="loader-text">Searching for medical spas near ${query}…</p>
+      </div>`;
+
+    try {
+      const response = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5',
+          max_tokens: 1500,
+          system: `You are a comprehensive US medical spa directory with detailed knowledge of medical spas, medspa chains, laser clinics, and aesthetic centers nationwide. When given a city, neighborhood, or ZIP code, return as many REAL, SPECIFIC medical spas as you know in that area — include smaller independent ones, not just chains. Return ONLY a raw JSON array, no markdown, no code fences. Each object must have: name (string), address (full street address with city and state), phone (string or null), rating (number 1-5 or null), reviewCount (number or null), hours (array of strings like "Mon: 9am-6pm" or null), reviews (array of up to 2 short review snippets or []). Return 8-12 results if possible.`,
+          messages: [{ role: 'user', content: `List all medical spas, medspa clinics, laser aesthetic centers, and cosmetic injection clinics near ${query}, USA. Include well-known and lesser-known local ones.` }]
+        })
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`API error ${response.status}: ${text.slice(0, 300)}`);
+      }
+
+      const data = await response.json();
+      const allText = (data.content || [])
+        .filter(b => b.type === 'text')
+        .map(b => b.text)
+        .join('');
+
+      const match = allText.match(/\[[\s\S]*\]/);
+      if (!match) throw new Error('No results returned. Please try again.');
+
+      let raw = match[0]
+        .replace(/[\u0000-\u001F\u007F]/g, ' ')
+        .replace(/,\s*([}\]])/g, '$1')
+        .trim();
+
+      let spas;
+      try {
+        spas = JSON.parse(raw);
+      } catch (parseErr) {
+        const objects = [];
+        const objMatches = raw.match(/\{[^{}]*\}/g) || [];
+        for (const obj of objMatches) {
+          try { objects.push(JSON.parse(obj)); } catch(e) {}
+        }
+        if (objects.length === 0) throw new Error('Could not parse results. Please try again.');
+        spas = objects;
+      }
+
+      renderResults(spas, query);
+
+    } catch (err) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <circle cx="14" cy="14" r="11" stroke="#0f6e56" stroke-width="1.5"/>
+              <path d="M14 9v6M14 17v2" stroke="#0f6e56" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3>No results found</h3>
+          <p>Try a different city name or ZIP code.</p>
+        </div>`;
+      errorBox.textContent = 'Error: ' + err.message;
+      errorBox.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Search`;
+    }
+  }
+
+  function renderResults(spas, query) {
+    const container = document.getElementById('resultsContainer');
+    const statusBar = document.getElementById('statusBar');
+
+    statusBar.innerHTML = `Found <strong>${spas.length} medical spa${spas.length !== 1 ? 's' : ''}</strong> near ${query}`;
+
+    if (!spas.length) {
+      container.innerHTML = `<div class="empty-state"><div class="empty-icon"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="11" stroke="#0f6e56" stroke-width="1.5"/></svg></div><h3>No results</h3><p>Try a broader search — use the city name without a state, or try a nearby city.</p></div>`;
+      return;
+    }
+
+    container.innerHTML = `<div class="results-grid">${spas.map((s, i) => buildCard(s, i)).join('')}</div>`;
+  }
+
+  function buildCard(s, i) {
+    const ratingHtml = s.rating != null
+      ? `<div class="rating-badge"><span class="star-icon">★</span>${Number(s.rating).toFixed(1)}${s.reviewCount ? ` <span style="opacity:0.6;font-weight:300">(${s.reviewCount.toLocaleString()})</span>` : ''}</div>`
+      : '';
+
+    const statusHtml = s.isOpenNow != null
+      ? `<span class="status-pill ${s.isOpenNow ? 'pill-open' : 'pill-closed'}">${s.isOpenNow ? '● Open now' : '● Closed'}</span>`
+      : '';
+
+    let hoursHtml = '';
+    if (s.hours && s.hours.length) {
+      const rows = s.hours.map(h => {
+        const idx = h.indexOf(':');
+        if (idx === -1) return `<span class="hours-day">${h}</span><span class="hours-time"></span>`;
+        const day = h.slice(0, idx).trim();
+        const time = h.slice(idx + 1).trim();
+        return `<span class="hours-day">${day}</span><span class="hours-time">${time}</span>`;
+      }).join('');
+      hoursHtml = `<details><summary>View hours</summary><div class="hours-grid">${rows}</div></details>`;
+    }
+
+    const reviewsHtml = s.reviews && s.reviews.length
+      ? `<div class="reviews-section"><div class="reviews-label">What people say</div>${s.reviews.map(r => `<div class="review-item">"${r}"</div>`).join('')}</div>`
+      : '';
+
+    return `
+    <div class="spa-card">
+      <div class="card-header">
+        <div>
+          <div class="spa-number">No. ${String(i + 1).padStart(2, '0')}</div>
+          <div class="spa-name">${s.name || 'Medical Spa'}</div>
+        </div>
+        ${ratingHtml}
+      </div>
+      <div class="card-divider"></div>
+      ${s.address ? `<div class="card-detail">
+        <svg class="detail-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 8 4a1.5 1.5 0 0 1 0 3z"/></svg>
+        ${s.address}
+      </div>` : ''}
+      ${s.phone ? `<div class="card-detail">
+        <svg class="detail-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M13.5 10.5l-2-2a1 1 0 0 0-1.4 0l-.9.9a8.3 8.3 0 0 1-3.6-3.6l.9-.9a1 1 0 0 0 0-1.4l-2-2A1 1 0 0 0 3 2L2 3C1 4 2 8 5.5 11.5S12 15 13 14l1-1a1 1 0 0 0-.5-2.5z"/></svg>
+        <a href="tel:${s.phone.replace(/\D/g,'')}" style="color:inherit;text-decoration:none;">${s.phone}</a>
+      </div>` : ''}
+      ${statusHtml || hoursHtml ? `<div class="card-detail" style="flex-wrap:wrap;gap:6px;align-items:center;">
+        ${statusHtml}
+        ${hoursHtml}
+      </div>` : ''}
+      ${reviewsHtml}
+    </div>`;
+  }
+</script>
+</body>
+</html>
