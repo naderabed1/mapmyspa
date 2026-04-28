@@ -237,8 +237,9 @@
         body: JSON.stringify({
           model: 'claude-haiku-4-5',
           max_tokens: 1500,
-          system: `You are a comprehensive US medical spa directory with detailed knowledge of medical spas, medspa chains, laser clinics, and aesthetic centers nationwide. When given a city, neighborhood, or ZIP code, return as many REAL, SPECIFIC medical spas as you know in that area — include smaller independent ones, not just chains. Return ONLY a raw JSON array, no markdown, no code fences. Each object must have: name (string), address (full street address with city and state), phone (string or null), rating (number 1-5 or null), reviewCount (number or null), hours (array of strings like "Mon: 9am-6pm" or null), reviews (array of up to 2 short review snippets or []). Return 8-12 results if possible.`,
-          messages: [{ role: 'user', content: `List all medical spas, medspa clinics, laser aesthetic centers, and cosmetic injection clinics near ${query}, USA. Include well-known and lesser-known local ones.` }]
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          system: `Search the web for real, currently operating medical spas near the given US location. Return ONLY a raw JSON array, no markdown, no code fences. Each object must have: name (string), address (full street address with city and state), phone (string or null), rating (number 1-5 or null), reviewCount (number or null), hours (array of strings like "Mon: 9am-6pm" or null), reviews (array of up to 2 short review snippets or []). Return 8-12 real results.`,
+          messages: [{ role: 'user', content: `Search for medical spas, medspa clinics, laser aesthetic centers near ${query}, USA.` }]
         })
       });
       if (!response.ok) { const text = await response.text(); throw new Error(`API error ${response.status}: ${text.slice(0, 300)}`); }
