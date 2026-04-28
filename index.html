@@ -226,6 +226,7 @@
           if(objects.length===0) throw new Error('Could not parse results. Please try again.');
           spas=objects;
         }
+        spas = await enrichWithCoords(spas);
         currentResults = spas;
         if(map){markers.forEach(m=>m.remove());markers=[];map.remove();map=null;}
         renderResults(spas, query, radius);
@@ -254,6 +255,29 @@
       const reviewsHtml=s.reviews&&s.reviews.length?`<div class="reviews-section"><div class="reviews-label">What people say</div>${s.reviews.map(r=>`<div class="review-item">"${r}"</div>`).join('')}</div>`:'';
       return`<div class="spa-card"><div class="card-header"><div><div class="spa-number">No. ${String(i+1).padStart(2,'0')}</div><div class="spa-name">${s.name||'Medical Spa'}</div></div>${ratingHtml}</div><div class="card-divider"></div>${s.address?`<div class="card-detail"><svg class="detail-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1C5.24 1 3 3.24 3 6c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 8 4a1.5 1.5 0 0 1 0 3z"/></svg>${s.address}</div>`:''} ${s.phone?`<div class="card-detail"><svg class="detail-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M13.5 10.5l-2-2a1 1 0 0 0-1.4 0l-.9.9a8.3 8.3 0 0 1-3.6-3.6l.9-.9a1 1 0 0 0 0-1.4l-2-2A1 1 0 0 0 3 2L2 3C1 4 2 8 5.5 11.5S12 15 13 14l1-1a1 1 0 0 0-.5-2.5z"/></svg><a href="tel:${s.phone.replace(/\D/g,'')}" style="color:inherit;text-decoration:none;">${s.phone}</a></div>`:''} ${hoursHtml?`<div class="card-detail">${hoursHtml}</div>`:''} ${reviewsHtml}</div>`;
     }
+
+    async function geocodeAddress(address) {
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+        const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+        const data = await res.json();
+        if (data && data[0]) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      } catch(e) {}
+      return null;
+    }
+
+    async function enrichWithCoords(results) {
+      const enriched = await Promise.all(results.map(async r => {
+        if (r.lat && r.lng) return r;
+        if (r.address) {
+          const coords = await geocodeAddress(r.address);
+          if (coords) return { ...r, ...coords };
+        }
+        return r;
+      }));
+      return enriched;
+    }
+
   </script>
 </body>
 </html>
