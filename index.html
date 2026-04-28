@@ -208,7 +208,7 @@
             model: 'claude-haiku-4-5-20251001',
             max_tokens: 4000,
             tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-            system: `Search the web for real, currently operating medical spas within ${radius} miles of the given US location. CRITICAL: every name, address, and phone must be accurate and match the same business. Return ONLY a raw JSON array, no markdown, no code fences. Each object: name, address (full with city/state), phone (or null), rating (number or null), reviewCount (number or null), hours (string array or null), reviews (up to 2 real snippets or []), lat (latitude number or null), lng (longitude number or null). Return 8-12 verified results.`,
+            system: `Search the web for real, currently operating medical spas near the given US location. CRITICAL: prioritize results WITHIN the exact ZIP code or city first, then expand to within ${radius} miles. Every name, address, and phone must be accurate and match the same business. Return ONLY a raw JSON array, no markdown, no code fences. Each object: name, address (full with city/state), phone (or null), rating (number or null), reviewCount (number or null), hours (string array or null), reviews (up to 2 real snippets or []), lat (latitude number or null), lng (longitude number or null). Return 8-12 verified results, sorted nearest first.`,
             messages: [{ role: 'user', content: `Search for medical spas within ${radius} miles of ${query}, USA. Verify each business name matches its address.` }]
           })
         });
