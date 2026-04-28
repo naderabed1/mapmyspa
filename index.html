@@ -206,9 +206,10 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             model: 'claude-haiku-4-5-20251001',
-            max_tokens: 4000,
+            max_tokens: 5000,
+            temperature: 0,
             tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-            system: `Search the web for real, currently operating medical spas near the given US location. CRITICAL: prioritize results WITHIN the exact ZIP code or city first, then expand to within ${radius} miles. Every name, address, and phone must be accurate and match the same business. Return ONLY a raw JSON array, no markdown, no code fences. Each object: name, address (full with city/state), phone (or null), rating (number or null), reviewCount (number or null), hours (string array or null), reviews (up to 2 real snippets or []), lat (latitude number or null), lng (longitude number or null). Return 8-12 verified results, sorted nearest first.`,
+            system: `You are a medical spa directory assistant. Search the web thoroughly for ALL real, currently operating medical spas near the given US location. CRITICAL RULES: 1) Search multiple times to find ALL spas, 2) Prioritize results within the exact ZIP code or city first, then expand outward to ${radius} miles, 3) Every name, address, and phone must be accurate and verified, 4) Return ONLY a raw JSON array with no markdown or code fences. Each object must have: name, address (full with city/state), phone (or null), rating (number or null), reviewCount (number or null), hours (string array or null), reviews (up to 2 snippets or []), lat (null), lng (null). Return ALL found results up to 15, sorted by distance nearest first.`,
             messages: [{ role: 'user', content: `Search for medical spas within ${radius} miles of ${query}, USA. Verify each business name matches its address.` }]
           })
         });
