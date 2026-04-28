@@ -229,6 +229,9 @@
         }
         spas = await enrichWithCoords(spas);
         currentResults = spas;
+        lastQuery = query;
+        lastRadius = radius;
+        loadMorePage = 1;
         if(map){markers.forEach(m=>m.remove());markers=[];map.remove();map=null;}
         renderResults(spas, query, radius);
       } catch(err) {
@@ -241,12 +244,60 @@
       }
     }
 
-    function renderResults(spas, query, radius) {
+    function renderResults(spas, query, radius, append=false) {
       const container = document.getElementById('resultsContainer');
       document.getElementById('statusBar').innerHTML = `Found <strong>${spas.length} medical spa${spas.length!==1?'s':''}</strong> within ${radius} miles of ${query}`;
       document.getElementById('viewToggle').style.display = 'block';
       if(!spas.length){container.innerHTML=`<div class="empty-state"><div class="empty-icon"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="11" stroke="#0f6e56" stroke-width="1.5"/></svg></div><h3>No results</h3><p>Try a broader radius or nearby city.</p></div>`;return;}
-      container.innerHTML=`<div class="results-grid">${spas.map((s,i)=>buildCard(s,i)).join('')}</div>`;
+      const grid = `<div class="results-grid" id="resultsGrid">${spas.map((s,i)=>buildCard(s,i)).join('')}</div>`;
+      const moreBtn = `<div style="text-align:center;margin-top:2rem;"><button class="search-btn" id="loadMoreBtn" onclick="loadMore()" style="margin:0 auto;height:44px;padding:0 28px;font-size:14px;">Load More Results</button></div>`;
+      container.innerHTML = grid + moreBtn;
+    }
+
+    let lastQuery = '';
+    let lastRadius = '';
+    let loadMorePage = 1;
+
+    async function loadMore() {
+      const btn = document.getElementById('loadMoreBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="white" stroke-width="1.5" fill="none" stroke-dasharray="28" stroke-dashoffset="10"><animateTransform attributeName="transform" type="rotate" from="0 8 8" to="360 8 8" dur="0.8s" repeatCount="indefinite"/></circle></svg> Loading...`;
+      loadMorePage++;
+      const existingNames = new Set(currentResults.map(r => r.name?.toLowerCase().trim()));
+      try {
+        const response = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 5000,
+            temperature: 0,
+            tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+            system: `You are a medical spa directory assistant. Search the web for MORE medical spas near the given US location that were NOT already found. Search specifically for lesser-known, smaller, or boutique medical spas. CRITICAL: Return ONLY a raw JSON array, no markdown, no code fences. Each object: name, address (full with city/state), phone (or null), rating (number or null), reviewCount (number or null), hours (string array or null), reviews (up to 2 snippets or []), lat (null), lng (null). Return up to 10 additional results sorted nearest first.`,
+            messages: [{ role: 'user', content: `Find MORE medical spas within ${lastRadius} miles of ${lastQuery}, USA. This is page ${loadMorePage} of results — find different spas not commonly listed. Already found: ${[...existingNames].join(', ')}.` }]
+          })
+        });
+        const data = await response.json();
+        const allText = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+        const match = allText.match(/\[[\s\S]*\]/);
+        if (!match) throw new Error('No more results found.');
+        let raw = match[0].replace(/[\u0000-\u001F\u007F]/g,' ').replace(/,\s*([}\]])/g,'$1').trim();
+        let newSpas = JSON.parse(raw);
+        // Filter out duplicates
+        newSpas = newSpas.filter(s => !existingNames.has(s.name?.toLowerCase().trim()));
+        newSpas = await enrichWithCoords(newSpas);
+        currentResults = [...currentResults, ...newSpas];
+        // Append new cards to grid
+        const grid = document.getElementById('resultsGrid');
+        const startIdx = currentResults.length - newSpas.length;
+        grid.innerHTML += newSpas.map((s,i)=>buildCard(s, startIdx+i)).join('');
+        document.getElementById('statusBar').innerHTML = `Found <strong>${currentResults.length} medical spa${currentResults.length!==1?'s':''}</strong> within ${lastRadius} miles of ${lastQuery}`;
+        btn.disabled = false;
+        btn.innerHTML = 'Load More Results';
+      } catch(err) {
+        btn.textContent = 'No more results found';
+        btn.disabled = true;
+      }
     }
 
     function buildCard(s,i) {
