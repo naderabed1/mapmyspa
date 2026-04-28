@@ -235,7 +235,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-5',
+          model: 'claude-haiku-4-5',
           max_tokens: 2000,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
           system: `You are a precise medical spa directory. Search the web for real medical spas near the given location. CRITICAL: every name, address, and phone number must match exactly — never mix details from different businesses. Return ONLY a raw JSON array, no markdown, no code fences. Each object: name, address (verified full address with city/state), phone (or null), rating (number or null), reviewCount (number or null), hours (string array or null), reviews (up to 2 real snippets or []). Only include businesses you can verify exist at that exact address.`,
